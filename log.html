@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Log Workout</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+<style>
+body { background-color: #798777; color: #F8EDE3; }
+.navbar { background-color: #A2B29F; }
+.navbar-brand { color: #F8EDE3 !important; font-weight: 700; }
+.card { background-color: #A2B29F; border: 1px solid #BDD2B6; box-shadow: 0 0 15px rgba(188,210,182,0.3); color: #F8EDE3; border-radius: 12px; padding: 20px; margin-bottom: 18px; }
+label { color: #F8EDE3; font-weight: 700; }
+.form-control, .form-select { background-color: #A2B29F; color: #F8EDE3; border: 1px solid #BDD2B6; border-radius: 8px; padding: 10px; }
+.exercise-card { background-color: #A2B29F; border: 1px solid #BDD2B6; border-radius: 12px; padding: 15px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; color: #F8EDE3; }
+.exercise-info .name { color: black; font-weight: 700; margin-right: 6px; }
+.exercise-info .sets, 
+.exercise-info .reps, 
+.exercise-info .weight { color: black; font-weight: 600; margin-right: 4px; } /* ✅ Numbers now black */
+.exercise-buttons button { margin-left: 6px; border-color: #798777; color: #798777; }
+.btn-custom { background-color: #F8EDE3; color: #798777; font-weight: 700; border-radius: 12px; padding: 12px 25px; }
+.btn-custom:hover { background-color: #BDD2B6; color: #798777; }
+.section-title { font-weight: 700; margin-bottom: 8px; }
+.section-title.day-type { color: black; }
+.group-title { font-weight: 700; color: black; margin-top: 12px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; }
+.add-ex-btn { margin-bottom: 12px; }
+</style>
+</head>
+<body>
+
+<nav class="navbar navbar-dark px-3">
+    <a href="index.html" class="navbar-brand">⬅ Back</a>
+    <span class="navbar-text section-title">Log Workout</span>
+</nav>
+
+<div class="container my-4">
+    <div class="card">
+
+        <!-- Person Selection -->
+        <div class="mb-3">
+            <label for="personSelect">Select Person</label>
+            <select id="personSelect" class="form-select">
+                <option value="Adhwa">Adhwa</option>
+                <option value="Ainaa">Ainaa</option>
+            </select>
+        </div>
+
+        <!-- Date Picker -->
+        <div class="mb-3">
+            <label for="workoutDate">Workout Date</label>
+            <input type="date" id="workoutDate" class="form-control">
+        </div>
+
+        <!-- Day Type -->
+        <div class="mb-3">
+            <label for="dayType">Select Day Type</label>
+            <select id="dayType" class="form-select" onchange="loadRoutine()">
+                <option value="">-- Select --</option>
+                <option value="Push">Push</option>
+                <option value="Pull">Pull</option>
+                <option value="Legs">Legs</option>
+            </select>
+        </div>
+
+        <h5 class="section-title mb-3">Exercises</h5>
+        <div id="exerciseContainer"></div>
+
+        <button class="btn btn-custom" onclick="saveWorkout()">Save Workout 💪</button>
+    </div>
+</div>
+
+<script>
+// Muscle groups for each day type
+const routines = {
+    Push: { Chest: ["Bench Press","Incline Dumbbell Press"], Shoulders: ["Overhead Press"], Triceps: ["Triceps Pushdown"] },
+    Pull: { Back: ["Pull-Ups","Barbell Row","Face Pulls"], Biceps: ["Bicep Curl"] },
+    Legs: { Legs: ["Squat","Deadlift","Lunges","Leg Curl"] }
+};
+
+// Set default date to today
+const today = new Date();
+document.getElementById("workoutDate").value = today.toISOString().slice(0,10);
+
+let exercises = [];
+
+// Load routine by day type
+function loadRoutine() {
+    const dayType = document.getElementById("dayType").value;
+    exercises = [];
+    const container = document.getElementById("exerciseContainer");
+    container.innerHTML = "";
+    if(!dayType) return;
+
+    const dayGroups = routines[dayType];
+    for(const group in dayGroups) {
+        const groupDiv = document.createElement("div");
+
+        // Group title with Add button
+        groupDiv.innerHTML = `
+            <div class="group-title mb-2">
+                <span>${group}</span>
+                <button class="btn btn-sm btn-outline-light" onclick="promptAddExercise('${group}')">➕ Add Exercise</button>
+            </div>
+        `;
+
+        const groupContainer = document.createElement("div");
+        groupContainer.id = `group-${group}`;
+        groupDiv.appendChild(groupContainer);
+        container.appendChild(groupDiv);
+
+        dayGroups[group].forEach(ex => addExercise(ex, groupContainer));
+    }
+}
+
+// Add exercise to a specific container
+function addExercise(name="", container=null) {
+    if(!container) container = document.getElementById("exerciseContainer");
+
+    const div = document.createElement("div");
+    div.classList.add("exercise-card");
+    div.innerHTML = `
+        <div class="exercise-info">
+            <span class="name">${name}</span> – 
+            <input class="sets" type="number" placeholder="Sets" min="0">
+            <input class="reps" type="text" placeholder="Reps e.g. 10-12">
+            <input class="weight" type="number" placeholder="Weight kg" min="0">
+        </div>
+        <div class="exercise-buttons">
+            <button class="btn btn-sm btn-outline-danger" onclick="removeExercise(this)">Delete</button>
+        </div>
+    `;
+    container.appendChild(div);
+}
+
+// Prompt to add exercise to a specific group
+function promptAddExercise(group) {
+    const container = document.getElementById(`group-${group}`);
+    const name = prompt(`Enter exercise name for ${group}:`);
+    if(name && name.trim()!=="") addExercise(name.trim(), container);
+}
+
+// Remove exercise
+function removeExercise(button) { button.parentElement.parentElement.remove(); }
+
+// Save workout
+function saveWorkout() {
+    const dayType = document.getElementById("dayType").value;
+    const person = document.getElementById("personSelect").value;
+    if(!dayType){ alert("Select a day type first!"); return; }
+
+    const container = document.getElementById("exerciseContainer");
+    const cards = container.querySelectorAll(".exercise-card");
+    if(cards.length===0){ alert("Add at least one exercise."); return; }
+
+    let workoutExercises = [];
+    cards.forEach(card => {
+        const name = card.querySelector(".name").innerText;
+        const sets = card.querySelector(".sets").value || 0;
+        const reps = card.querySelector(".reps").value || "";
+        const weight = card.querySelector(".weight").value || 0;
+        workoutExercises.push({name, sets, reps, weight});
+    });
+
+    let workouts = JSON.parse(localStorage.getItem("gymData")) || [];
+    const selectedDate = document.getElementById("workoutDate").value;
+    const workout = { date: new Date(selectedDate).toISOString(), person, dayType, exercises: workoutExercises };
+    workouts.push(workout);
+    localStorage.setItem("gymData", JSON.stringify(workouts));
+    alert("Workout saved! 💪");
+    window.location.href = "index.html";
+}
+</script>
+
+</body>
+</html>
