@@ -143,18 +143,18 @@ function promptAddExercise(group){
 
 // Save workout
 async function saveWorkout(){
-    const user = document.getElementById("personSelect").value;
-    const day = document.getElementById("dayType").value;
+    const person = document.getElementById("personSelect").value; // match index.html
+    const dayType = document.getElementById("dayType").value;
     const date = document.getElementById("workoutDate").value;
 
-    if(!day){ alert("Select a day!"); return; }
+    if(!dayType){ alert("Select a day!"); return; }
 
     const exercises = [];
     document.querySelectorAll(".exercise-card").forEach(card => {
         const name = card.querySelector(".exercise-name").value;
-        const sets = card.querySelector(".exercise-sets").value || 0;
+        const sets = parseInt(card.querySelector(".exercise-sets").value) || 0;
         const reps = card.querySelector(".exercise-reps").value || "";
-        const weight = card.querySelector(".exercise-weight").value || 0;
+        const weight = parseFloat(card.querySelector(".exercise-weight").value) || 0;
         if(name) exercises.push({name, sets, reps, weight});
     });
 
@@ -162,7 +162,11 @@ async function saveWorkout(){
 
     try {
         await addDoc(collection(db,"workouts"),{
-            user, day, date, exercises, createdAt: new Date()
+            person,       // not user
+            dayType,      // not day
+            date,
+            exercises,
+            createdAt: new Date()
         });
         alert("Workout saved! 💪🔥");
         window.location.href = "index.html";
