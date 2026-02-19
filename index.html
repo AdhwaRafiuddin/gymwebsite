@@ -9,7 +9,7 @@
 <style>
 body { background: linear-gradient(135deg, #798777, #6c7a6a); color: #F8EDE3; min-height: 100vh; }
 .navbar { background-color: #A2B29F; box-shadow:0 3px 10px rgba(0,0,0,0.2);}
-.navbar-brand { color: #F8EDE3 !important; font-weight:800; letter-spacing:1px; }
+.navbar-brand { color:#F8EDE3 !important; font-weight:800; letter-spacing:1px;}
 .card { background-color:#A2B29F; border:none; border-radius:18px; padding:20px; margin-bottom:22px; box-shadow:0 10px 25px rgba(0,0,0,0.25);}
 .exercise-item { background-color:#B5C7B3; border-radius:12px; padding:12px 15px; margin-bottom:10px; display:flex; justify-content:space-between; align-items:center;}
 .exercise-info { flex:1; font-weight:600; color:#2f3b2f; }
@@ -74,7 +74,7 @@ async function initApp() {
     document.getElementById("todayDate").innerText =
         today.toLocaleDateString('en-US', { weekday:'long', year:'numeric', month:'long', day:'numeric' });
 
-    // Load last workouts
+    // Load workouts
     await loadWorkouts();
 }
 
@@ -97,34 +97,33 @@ async function loadWorkouts() {
             return;
         }
 
-// Sort newest first
-workouts.sort((a,b) => new Date(b.date) - new Date(a.date));
+        // Sort newest first
+        workouts.sort((a,b) => new Date(b.date) - new Date(a.date));
 
-workouts.forEach(workout => {
-    const card = document.createElement("div");
-    card.classList.add("card");
+        // Loop through all workouts
+        workouts.forEach(workout => {
+            const card = document.createElement("div");
+            card.classList.add("card");
 
-    let html = `
-        <h6 class="section-title day-type mb-1">${workout.dayType} Day</h6>
-        <h5 class="section-title mb-3">
-            ${workout.person} – ${new Date(workout.date).toLocaleDateString()}
-        </h5>
-    `;
+            let html = `
+                <h6 class="section-title day-type mb-1">${workout.day} Day</h6>
+                <h5 class="section-title mb-3">${workout.user} – ${new Date(workout.date).toLocaleDateString()}</h5>
+            `;
 
-    workout.exercises.forEach(ex => {
-        html += `
-            <div class="exercise-item">
-                <div class="exercise-info">
-                    <span class="name">${ex.name}</span>
-                    ${ex.sets} sets × ${ex.reps} reps @ ${ex.weight} kg
-                </div>
-            </div>
-        `;
-    });
+            workout.exercises.forEach(ex => {
+                html += `
+                    <div class="exercise-item">
+                        <div class="exercise-info">
+                            <span class="name">${ex.name}</span>
+                            ${ex.sets} sets × ${ex.reps} reps @ ${ex.weight} kg
+                        </div>
+                    </div>
+                `;
+            });
 
-    card.innerHTML = html;
-    container.appendChild(card);
-});
+            card.innerHTML = html;
+            container.appendChild(card);
+        });
 
     } catch (err) {
         console.error("Error loading workouts:", err);
