@@ -5,23 +5,84 @@
 <title>Gym Tracker</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+
 <style>
-    body { background-color: #798777; color: #F8EDE3; }
-    .navbar { background-color: #A2B29F; }
-    .navbar-brand { color: #F8EDE3 !important; font-weight: 700; }
-    .card { background-color: #A2B29F; border: 1px solid #BDD2B6; box-shadow: 0 0 15px rgba(188,210,182,0.3); color: #F8EDE3; border-radius: 12px; padding: 15px; margin-bottom: 18px; }
-    .exercise-item { background-color: #A2B29F; border-bottom: 1px solid #BDD2B6; display: flex; justify-content: space-between; align-items: center; padding: 10px; margin-bottom: 6px; color: #F8EDE3; border-radius: 8px; }
-    .exercise-info { flex: 1; }
-    .exercise-info .name { color: black; font-weight: 700; margin-right: 6px; }
-    .exercise-info .sets, .exercise-info .reps, .exercise-info .weight { color: black; font-weight: 600; margin-right: 4px; }
-    .exercise-buttons button { margin-left: 6px; border-color: #798777; color: #798777; }
-    .btn-custom { background-color: #F8EDE3; color: #798777; font-weight: 700; border-radius: 12px; padding: 12px 25px; transition: 0.2s ease; }
-    .btn-custom:hover { background-color: #BDD2B6; color: #798777; }
-    .section-title { font-weight: 700; margin-bottom: 8px; }
-    .section-title.day-type { color: black; }
-    .subtle-text { color: #BDD2B6; font-weight: 500; }
+    body {
+        background: linear-gradient(135deg, #798777, #6c7a6a);
+        color: #F8EDE3;
+        min-height: 100vh;
+    }
+
+    .navbar {
+        background-color: #A2B29F;
+        box-shadow: 0 3px 10px rgba(0,0,0,0.2);
+    }
+
+    .navbar-brand {
+        color: #F8EDE3 !important;
+        font-weight: 800;
+        letter-spacing: 1px;
+    }
+
+    .card {
+        background-color: #A2B29F;
+        border: none;
+        box-shadow: 0 10px 25px rgba(0,0,0,0.25);
+        border-radius: 18px;
+        padding: 20px;
+        margin-bottom: 22px;
+    }
+
+    .exercise-item {
+        background-color: #B5C7B3;
+        border-radius: 12px;
+        padding: 12px 15px;
+        margin-bottom: 10px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .exercise-info {
+        flex: 1;
+        font-weight: 600;
+        color: #2f3b2f;
+    }
+
+    .exercise-info .name {
+        font-weight: 800;
+        margin-right: 6px;
+    }
+
+    .btn-custom {
+        background-color: #F8EDE3;
+        color: #798777;
+        font-weight: 700;
+        border-radius: 16px;
+        padding: 12px 30px;
+    }
+
+    .btn-custom:hover {
+        background-color: #BDD2B6;
+    }
+
+    .section-title {
+        font-weight: 800;
+    }
+
+    .section-title.day-type {
+        color: #2f3b2f;
+        font-size: 14px;
+        text-transform: uppercase;
+    }
+
+    .subtle-text {
+        color: #DDE6DD;
+        font-weight: 500;
+    }
 </style>
 </head>
+
 <body>
 
 <nav class="navbar navbar-dark px-3">
@@ -35,101 +96,120 @@
         <p class="subtle-text">Consistency builds strength.</p>
     </div>
 
-    <!-- Last Workout -->
     <div id="lastWorkoutContainer"></div>
 
-    <div class="text-center mt-3">
-        <a href="log.html" class="btn btn-custom">Log New Workout 💪</a>
+    <div class="text-center mt-4">
+        <a href="log.html" class="btn btn-custom">
+            Log New Workout 💪
+        </a>
     </div>
+
 </div>
 
+<!-- 🔥 STEP 1: Firebase Setup -->
+<script type="module">
+
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyAPy4J2VvWVbTjzKPGhr5YkfYwwL7Ai6B4",
+  authDomain: "gymwebsite-tracker.firebaseapp.com",
+  projectId: "gymwebsite-tracker",
+  storageBucket: "gymwebsite-tracker.firebasestorage.app",
+  messagingSenderId: "1048952192948",
+  appId: "1:1048952192948:web:b77466f54c26e8f74c7ce1"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+// Make accessible globally
+window.db = db;
+window.collection = collection;
+window.getDocs = getDocs;
+
+// After Firebase loads → start app
+initApp();
+
+</script>
+
+<!-- 🔥 STEP 2: Firestore Logic -->
 <script>
-const today = new Date();
-document.getElementById("todayDate").innerText = today.toLocaleDateString('en-US', { weekday: 'long', year:'numeric', month:'long', day:'numeric' });
 
-let workouts = JSON.parse(localStorage.getItem("gymData")) || [];
+function initApp() {
 
-const container = document.getElementById("lastWorkoutContainer");
-const todayString = today.toISOString().split("T")[0];
-let todaysWorkouts = workouts.filter(w => w.date.startsWith(todayString));
-if (todaysWorkouts.length === 0 && workouts.length > 0) todaysWorkouts = [workouts[workouts.length - 1]];
-
-function renderWorkouts() {
-    container.innerHTML = "";
-    todaysWorkouts.forEach((workout, workoutIndex) => {
-        const card = document.createElement("div");
-        card.classList.add("card", "mb-3");
-
-        let html = `
-            <h6 class="section-title day-type mb-1">${workout.dayType} Day</h6>
-            <h5 class="section-title mb-3">${workout.person} – ${new Date(workout.date).toLocaleDateString()}</h5>
-        `;
-
-        workout.exercises.forEach((ex, exIndex) => {
-            html += `
-                <div class="exercise-item" id="exercise-${workoutIndex}-${exIndex}">
-                    <div class="exercise-info">
-                        <span class="name">${ex.name}</span> – 
-                        <span class="sets">${ex.sets}</span> sets × 
-                        <span class="reps">${ex.reps}</span> reps @ 
-                        <span class="weight">${ex.weight}</span> kg
-                    </div>
-                    <div class="exercise-buttons">
-                        <button class="btn btn-sm btn-outline-light" onclick="editExercise(${workoutIndex}, ${exIndex})">Edit</button>
-                        <button class="btn btn-sm btn-outline-danger" onclick="deleteExercise(${workoutIndex}, ${exIndex})">Delete</button>
-                    </div>
-                </div>
-            `;
+    const today = new Date();
+    document.getElementById("todayDate").innerText =
+        today.toLocaleDateString('en-US', {
+            weekday: 'long',
+            year:'numeric',
+            month:'long',
+            day:'numeric'
         });
 
-        card.innerHTML = html;
-        container.appendChild(card);
+    loadWorkouts();
+}
+
+async function loadWorkouts() {
+
+    const container = document.getElementById("lastWorkoutContainer");
+    container.innerHTML = "";
+
+    let workouts = [];
+
+    const querySnapshot = await window.getDocs(
+        window.collection(window.db, "workouts")
+    );
+
+    querySnapshot.forEach((doc) => {
+        workouts.push(doc.data());
     });
-}
 
-function editExercise(workoutIndex, exIndex) {
-    const ex = todaysWorkouts[workoutIndex].exercises[exIndex];
-    const div = document.getElementById(`exercise-${workoutIndex}-${exIndex}`);
-    div.innerHTML = `
-        <div class="exercise-info">
-            <input class="edit-input" type="text" value="${ex.name}" placeholder="Name">
-            <input class="edit-input" type="number" value="${ex.sets}" placeholder="Sets">
-            <input class="edit-input" type="text" value="${ex.reps}" placeholder="Reps">
-            <input class="edit-input" type="number" value="${ex.weight}" placeholder="Weight">
-        </div>
-        <div class="exercise-buttons">
-            <button class="btn btn-sm btn-outline-success" onclick="saveExercise(${workoutIndex}, ${exIndex})">Save</button>
-            <button class="btn btn-sm btn-outline-secondary" onclick="renderWorkouts()">Cancel</button>
-        </div>
+    if (workouts.length === 0) {
+        container.innerHTML = `
+            <div class="card text-center">
+                <h5>No workouts logged yet 💤</h5>
+                <p>Start your journey by logging your first workout.</p>
+            </div>
+        `;
+        return;
+    }
+
+    // Sort newest first
+    workouts.sort((a,b) => new Date(b.date) - new Date(a.date));
+
+    const latestWorkout = workouts[0];
+
+    const card = document.createElement("div");
+    card.classList.add("card");
+
+    let html = `
+        <h6 class="section-title day-type mb-1">
+            ${latestWorkout.dayType} Day
+        </h6>
+        <h5 class="section-title mb-3">
+            ${latestWorkout.person} – 
+            ${new Date(latestWorkout.date).toLocaleDateString()}
+        </h5>
     `;
+
+    latestWorkout.exercises.forEach((ex) => {
+        html += `
+            <div class="exercise-item">
+                <div class="exercise-info">
+                    <span class="name">${ex.name}</span>
+                    ${ex.sets} sets × ${ex.reps} reps @ ${ex.weight} kg
+                </div>
+            </div>
+        `;
+    });
+
+    card.innerHTML = html;
+    container.appendChild(card);
 }
 
-function saveExercise(workoutIndex, exIndex) {
-    const div = document.getElementById(`exercise-${workoutIndex}-${exIndex}`);
-    const inputs = div.querySelectorAll("input");
-    const updatedEx = { name: inputs[0].value, sets: inputs[1].value, reps: inputs[2].value, weight: inputs[3].value };
-    const globalIndex = workouts.findIndex(w => w.date === todaysWorkouts[workoutIndex].date);
-    workouts[globalIndex].exercises[exIndex] = updatedEx;
-    localStorage.setItem("gymData", JSON.stringify(workouts));
-    loadWorkouts();
-}
-
-function deleteExercise(workoutIndex, exIndex) {
-    if (!confirm("Delete this exercise?")) return;
-    const globalIndex = workouts.findIndex(w => w.date === todaysWorkouts[workoutIndex].date);
-    workouts[globalIndex].exercises.splice(exIndex,1);
-    if (workouts[globalIndex].exercises.length === 0) workouts.splice(globalIndex,1);
-    localStorage.setItem("gymData", JSON.stringify(workouts));
-    loadWorkouts();
-}
-
-function loadWorkouts() {
-    todaysWorkouts = workouts.filter(w => w.date.startsWith(todayString));
-    if (todaysWorkouts.length === 0 && workouts.length > 0) todaysWorkouts = [workouts[workouts.length-1]];
-    renderWorkouts();
-}
-
-loadWorkouts();
 </script>
+
 </body>
 </html>

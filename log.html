@@ -5,55 +5,124 @@
 <title>Log Workout</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+
 <style>
-body { background-color: #798777; color: #F8EDE3; }
-.navbar { background-color: #A2B29F; }
-.navbar-brand { color: #F8EDE3 !important; font-weight: 700; }
-.card { background-color: #A2B29F; border: 1px solid #BDD2B6; box-shadow: 0 0 15px rgba(188,210,182,0.3); color: #F8EDE3; border-radius: 12px; padding: 20px; margin-bottom: 18px; }
-label { color: #F8EDE3; font-weight: 700; }
-.form-control, .form-select { background-color: #A2B29F; color: #F8EDE3; border: 1px solid #BDD2B6; border-radius: 8px; padding: 10px; }
-.exercise-card { background-color: #A2B29F; border: 1px solid #BDD2B6; border-radius: 12px; padding: 15px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; color: #F8EDE3; }
-.exercise-info .name { color: black; font-weight: 700; margin-right: 6px; }
-.exercise-info .sets, 
-.exercise-info .reps, 
-.exercise-info .weight { color: black; font-weight: 600; margin-right: 4px; } /* ✅ Numbers now black */
-.exercise-buttons button { margin-left: 6px; border-color: #798777; color: #798777; }
-.btn-custom { background-color: #F8EDE3; color: #798777; font-weight: 700; border-radius: 12px; padding: 12px 25px; }
-.btn-custom:hover { background-color: #BDD2B6; color: #798777; }
-.section-title { font-weight: 700; margin-bottom: 8px; }
-.section-title.day-type { color: black; }
-.group-title { font-weight: 700; color: black; margin-top: 12px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; }
-.add-ex-btn { margin-bottom: 12px; }
+body {
+    background: linear-gradient(135deg, #798777, #6c7a6a);
+    color: #F8EDE3;
+    min-height: 100vh;
+}
+
+.navbar {
+    background-color: #A2B29F;
+    box-shadow: 0 3px 10px rgba(0,0,0,0.2);
+}
+
+.navbar-brand {
+    color: #F8EDE3 !important;
+    font-weight: 800;
+}
+
+.card {
+    background-color: #A2B29F;
+    border: none;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.25);
+    border-radius: 18px;
+    padding: 25px;
+    margin-bottom: 20px;
+}
+
+label {
+    font-weight: 700;
+    margin-bottom: 6px;
+}
+
+.form-control, .form-select {
+    background-color: #B5C7B3;
+    border: none;
+    border-radius: 10px;
+    padding: 10px;
+    font-weight: 600;
+    color: #2f3b2f;
+}
+
+.exercise-card {
+    background-color: #B5C7B3;
+    border-radius: 14px;
+    padding: 15px;
+    margin-bottom: 12px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.exercise-info {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+    font-weight: 700;
+    color: #2f3b2f;
+}
+
+.exercise-info input {
+    width: 85px;
+    border-radius: 8px;
+    border: none;
+    padding: 4px 6px;
+}
+
+.btn-custom {
+    background-color: #F8EDE3;
+    color: #798777;
+    font-weight: 800;
+    border-radius: 16px;
+    padding: 12px 30px;
+    margin-top: 15px;
+}
+
+.btn-custom:hover {
+    background-color: #BDD2B6;
+}
+
+.group-title {
+    font-weight: 800;
+    color: #2f3b2f;
+    margin-top: 20px;
+    margin-bottom: 10px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
 </style>
 </head>
+
 <body>
 
 <nav class="navbar navbar-dark px-3">
     <a href="index.html" class="navbar-brand">⬅ Back</a>
-    <span class="navbar-text section-title">Log Workout</span>
+    <span class="navbar-text fw-bold">Log Workout</span>
 </nav>
 
 <div class="container my-4">
     <div class="card">
 
-        <!-- Person Selection -->
         <div class="mb-3">
-            <label for="personSelect">Select Person</label>
+            <label>Select Person</label>
             <select id="personSelect" class="form-select">
                 <option value="Adhwa">Adhwa</option>
                 <option value="Ainaa">Ainaa</option>
             </select>
         </div>
 
-        <!-- Date Picker -->
         <div class="mb-3">
-            <label for="workoutDate">Workout Date</label>
+            <label>Workout Date</label>
             <input type="date" id="workoutDate" class="form-control">
         </div>
 
-        <!-- Day Type -->
         <div class="mb-3">
-            <label for="dayType">Select Day Type</label>
+            <label>Select Day Type</label>
             <select id="dayType" class="form-select" onchange="loadRoutine()">
                 <option value="">-- Select --</option>
                 <option value="Push">Push</option>
@@ -62,44 +131,79 @@ label { color: #F8EDE3; font-weight: 700; }
             </select>
         </div>
 
-        <h5 class="section-title mb-3">Exercises</h5>
+        <h5 class="fw-bold mb-3">Exercises</h5>
         <div id="exerciseContainer"></div>
 
-        <button class="btn btn-custom" onclick="saveWorkout()">Save Workout 💪</button>
+        <button id="saveBtn" class="btn btn-custom w-100" onclick="saveWorkout()">
+            Save Workout 💪
+        </button>
+
     </div>
 </div>
 
-<script>
-// Muscle groups for each day type
-const routines = {
-    Push: { Chest: ["Bench Press","Incline Dumbbell Press"], Shoulders: ["Overhead Press"], Triceps: ["Triceps Pushdown"] },
-    Pull: { Back: ["Pull-Ups","Barbell Row","Face Pulls"], Biceps: ["Bicep Curl"] },
-    Legs: { Legs: ["Squat","Deadlift","Lunges","Leg Curl"] }
+<!-- 🔥 Firebase Setup -->
+<script type="module">
+
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getFirestore, collection, addDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyAPy4J2VvWVbTjzKPGhr5YkfYwwL7Ai6B4",
+  authDomain: "gymwebsite-tracker.firebaseapp.com",
+  projectId: "gymwebsite-tracker",
+  storageBucket: "gymwebsite-tracker.firebasestorage.app",
+  messagingSenderId: "1048952192948",
+  appId: "1:1048952192948:web:b77466f54c26e8f74c7ce1"
 };
 
-// Set default date to today
-const today = new Date();
-document.getElementById("workoutDate").value = today.toISOString().slice(0,10);
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
 
-let exercises = [];
+window.db = db;
+window.collection = collection;
+window.addDoc = addDoc;
 
-// Load routine by day type
+</script>
+
+<script>
+
+const routines = {
+    Push: {
+        Chest: ["Bench Press","Incline Dumbbell Press"],
+        Shoulders: ["Overhead Press"],
+        Triceps: ["Triceps Pushdown"]
+    },
+    Pull: {
+        Back: ["Pull-Ups","Barbell Row","Face Pulls"],
+        Biceps: ["Bicep Curl"]
+    },
+    Legs: {
+        Legs: ["Squat","Deadlift","Lunges","Leg Curl"]
+    }
+};
+
+document.getElementById("workoutDate").value =
+    new Date().toISOString().slice(0,10);
+
 function loadRoutine() {
     const dayType = document.getElementById("dayType").value;
-    exercises = [];
     const container = document.getElementById("exerciseContainer");
     container.innerHTML = "";
     if(!dayType) return;
 
     const dayGroups = routines[dayType];
+
     for(const group in dayGroups) {
+
         const groupDiv = document.createElement("div");
 
-        // Group title with Add button
         groupDiv.innerHTML = `
-            <div class="group-title mb-2">
+            <div class="group-title">
                 <span>${group}</span>
-                <button class="btn btn-sm btn-outline-light" onclick="promptAddExercise('${group}')">➕ Add Exercise</button>
+                <button class="btn btn-sm btn-outline-light"
+                    onclick="promptAddExercise('${group}')">
+                    ➕ Add
+                </button>
             </div>
         `;
 
@@ -108,68 +212,90 @@ function loadRoutine() {
         groupDiv.appendChild(groupContainer);
         container.appendChild(groupDiv);
 
-        dayGroups[group].forEach(ex => addExercise(ex, groupContainer));
+        dayGroups[group].forEach(ex =>
+            addExercise(ex, groupContainer));
     }
 }
 
-// Add exercise to a specific container
 function addExercise(name="", container=null) {
-    if(!container) container = document.getElementById("exerciseContainer");
+    if(!container)
+        container = document.getElementById("exerciseContainer");
 
     const div = document.createElement("div");
     div.classList.add("exercise-card");
+
     div.innerHTML = `
         <div class="exercise-info">
-            <span class="name">${name}</span> – 
+            <span>${name}</span>
             <input class="sets" type="number" placeholder="Sets" min="0">
-            <input class="reps" type="text" placeholder="Reps e.g. 10-12">
-            <input class="weight" type="number" placeholder="Weight kg" min="0">
+            <input class="reps" type="text" placeholder="Reps">
+            <input class="weight" type="number" placeholder="Kg" min="0">
         </div>
-        <div class="exercise-buttons">
-            <button class="btn btn-sm btn-outline-danger" onclick="removeExercise(this)">Delete</button>
-        </div>
+        <button class="btn btn-sm btn-outline-danger"
+            onclick="this.closest('.exercise-card').remove()">
+            Delete
+        </button>
     `;
+
     container.appendChild(div);
 }
 
-// Prompt to add exercise to a specific group
 function promptAddExercise(group) {
     const container = document.getElementById(`group-${group}`);
     const name = prompt(`Enter exercise name for ${group}:`);
-    if(name && name.trim()!=="") addExercise(name.trim(), container);
+    if(name && name.trim() !== "")
+        addExercise(name.trim(), container);
 }
 
-// Remove exercise
-function removeExercise(button) { button.parentElement.parentElement.remove(); }
+  async function saveWorkout() {
+    const user = document.getElementById("userSelect").value;
+    const day = document.getElementById("daySelect").value;
+    const date = document.getElementById("dateInput").value;
 
-// Save workout
-function saveWorkout() {
-    const dayType = document.getElementById("dayType").value;
-    const person = document.getElementById("personSelect").value;
-    if(!dayType){ alert("Select a day type first!"); return; }
+    const exercises = [];
 
-    const container = document.getElementById("exerciseContainer");
-    const cards = container.querySelectorAll(".exercise-card");
-    if(cards.length===0){ alert("Add at least one exercise."); return; }
+    document.querySelectorAll(".exercise-card").forEach(card => {
+      const name = card.querySelector(".exercise-name").value;
+      const sets = card.querySelector(".exercise-sets").value;
+      const reps = card.querySelector(".exercise-reps").value;
+      const weight = card.querySelector(".exercise-weight").value;
 
-    let workoutExercises = [];
-    cards.forEach(card => {
-        const name = card.querySelector(".name").innerText;
-        const sets = card.querySelector(".sets").value || 0;
-        const reps = card.querySelector(".reps").value || "";
-        const weight = card.querySelector(".weight").value || 0;
-        workoutExercises.push({name, sets, reps, weight});
+      if (name) {
+        exercises.push({
+          name,
+          sets,
+          reps,
+          weight
+        });
+      }
     });
 
-    let workouts = JSON.parse(localStorage.getItem("gymData")) || [];
-    const selectedDate = document.getElementById("workoutDate").value;
-    const workout = { date: new Date(selectedDate).toISOString(), person, dayType, exercises: workoutExercises };
-    workouts.push(workout);
-    localStorage.setItem("gymData", JSON.stringify(workouts));
-    alert("Workout saved! 💪");
-    window.location.href = "index.html";
-}
+    if (!date) {
+      alert("Please select a date.");
+      return;
+    }
+
+    try {
+      await addDoc(collection(db, "workouts"), {
+        user,
+        day,
+        date,
+        exercises,
+        createdAt: new Date()
+      });
+
+      alert("Workout saved to Firebase 💪🔥");
+      location.reload();
+
+    } catch (error) {
+      console.error("Error saving workout: ", error);
+      alert("Something went wrong.");
+    }
+  }
+
+  document.getElementById("saveBtn").addEventListener("click", saveWorkout);
 </script>
+
 
 </body>
 </html>
