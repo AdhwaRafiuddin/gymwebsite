@@ -105,9 +105,11 @@ async function loadWorkouts() {
         card.classList.add("card");
 
         let html = `
-            <h6 class="section-title day-type mb-1">${latestWorkout.day} Day</h6>
-            <h5 class="section-title mb-3">${latestWorkout.user} – ${new Date(latestWorkout.date).toLocaleDateString()}</h5>
-        `;
+    <h6 class="section-title day-type mb-1">${latestWorkout.dayType} Day</h6>
+    <h5 class="section-title mb-3">
+        ${latestWorkout.person} – ${new Date(latestWorkout.date).toLocaleDateString()}
+    </h5>
+`;
 
         latestWorkout.exercises.forEach(ex => {
             html += `
