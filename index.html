@@ -97,33 +97,34 @@ async function loadWorkouts() {
             return;
         }
 
-        // Sort newest first
-        workouts.sort((a,b) => new Date(b.date) - new Date(a.date));
-        const latestWorkout = workouts[0];
+// Sort newest first
+workouts.sort((a,b) => new Date(b.date) - new Date(a.date));
 
-        const card = document.createElement("div");
-        card.classList.add("card");
+workouts.forEach(workout => {
+    const card = document.createElement("div");
+    card.classList.add("card");
 
-        let html = `
-    <h6 class="section-title day-type mb-1">${latestWorkout.dayType} Day</h6>
-    <h5 class="section-title mb-3">
-        ${latestWorkout.person} – ${new Date(latestWorkout.date).toLocaleDateString()}
-    </h5>
-`;
+    let html = `
+        <h6 class="section-title day-type mb-1">${workout.dayType} Day</h6>
+        <h5 class="section-title mb-3">
+            ${workout.person} – ${new Date(workout.date).toLocaleDateString()}
+        </h5>
+    `;
 
-        latestWorkout.exercises.forEach(ex => {
-            html += `
-                <div class="exercise-item">
-                    <div class="exercise-info">
-                        <span class="name">${ex.name}</span>
-                        ${ex.sets} sets × ${ex.reps} reps @ ${ex.weight} kg
-                    </div>
+    workout.exercises.forEach(ex => {
+        html += `
+            <div class="exercise-item">
+                <div class="exercise-info">
+                    <span class="name">${ex.name}</span>
+                    ${ex.sets} sets × ${ex.reps} reps @ ${ex.weight} kg
                 </div>
-            `;
-        });
+            </div>
+        `;
+    });
 
-        card.innerHTML = html;
-        container.appendChild(card);
+    card.innerHTML = html;
+    container.appendChild(card);
+});
 
     } catch (err) {
         console.error("Error loading workouts:", err);
