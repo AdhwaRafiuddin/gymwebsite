@@ -7,94 +7,18 @@
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
 
 <style>
-body {
-    background: linear-gradient(135deg, #798777, #6c7a6a);
-    color: #F8EDE3;
-    min-height: 100vh;
-}
-
-.navbar {
-    background-color: #A2B29F;
-    box-shadow: 0 3px 10px rgba(0,0,0,0.2);
-}
-
-.navbar-brand {
-    color: #F8EDE3 !important;
-    font-weight: 800;
-}
-
-.card {
-    background-color: #A2B29F;
-    border: none;
-    box-shadow: 0 10px 25px rgba(0,0,0,0.25);
-    border-radius: 18px;
-    padding: 25px;
-    margin-bottom: 20px;
-}
-
-label {
-    font-weight: 700;
-    margin-bottom: 6px;
-}
-
-.form-control, .form-select {
-    background-color: #B5C7B3;
-    border: none;
-    border-radius: 10px;
-    padding: 10px;
-    font-weight: 600;
-    color: #2f3b2f;
-}
-
-.exercise-card {
-    background-color: #B5C7B3;
-    border-radius: 14px;
-    padding: 15px;
-    margin-bottom: 12px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-
-.exercise-info {
-    display: flex;
-    align-items: center;
-    flex-wrap: wrap;
-    gap: 8px;
-    font-weight: 700;
-    color: #2f3b2f;
-}
-
-.exercise-info input {
-    width: 85px;
-    border-radius: 8px;
-    border: none;
-    padding: 4px 6px;
-}
-
-.btn-custom {
-    background-color: #F8EDE3;
-    color: #798777;
-    font-weight: 800;
-    border-radius: 16px;
-    padding: 12px 30px;
-    margin-top: 15px;
-}
-
-.btn-custom:hover {
-    background-color: #BDD2B6;
-}
-
-.group-title {
-    font-weight: 800;
-    color: #2f3b2f;
-    margin-top: 20px;
-    margin-bottom: 10px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-
+body { background: linear-gradient(135deg, #798777, #6c7a6a); color: #F8EDE3; min-height:100vh; }
+.navbar { background-color:#A2B29F; box-shadow:0 3px 10px rgba(0,0,0,0.2); }
+.navbar-brand { color:#F8EDE3 !important; font-weight:800; }
+.card { background-color:#A2B29F; border:none; border-radius:18px; padding:25px; margin-bottom:20px; box-shadow:0 10px 25px rgba(0,0,0,0.25); }
+label { font-weight:700; margin-bottom:6px; }
+.form-control, .form-select { background-color:#B5C7B3; border:none; border-radius:10px; padding:10px; font-weight:600; color:#2f3b2f; }
+.exercise-card { background-color:#B5C7B3; border-radius:14px; padding:15px; margin-bottom:12px; display:flex; justify-content:space-between; align-items:center; }
+.exercise-info { display:flex; align-items:center; gap:8px; font-weight:700; color:#2f3b2f; }
+.exercise-info input { width:85px; border-radius:8px; border:none; padding:4px 6px; }
+.btn-custom { background-color:#F8EDE3; color:#798777; font-weight:800; border-radius:16px; padding:12px 30px; margin-top:15px; }
+.btn-custom:hover { background-color:#BDD2B6; }
+.group-title { font-weight:800; color:#2f3b2f; margin-top:20px; margin-bottom:10px; display:flex; justify-content:space-between; align-items:center; }
 </style>
 </head>
 
@@ -107,8 +31,6 @@ label {
 
 <div class="container my-4">
     <div class="card">
-
-        <!-- Person -->
         <div class="mb-3">
             <label>Select Person</label>
             <select id="personSelect" class="form-select">
@@ -117,13 +39,11 @@ label {
             </select>
         </div>
 
-        <!-- Date -->
         <div class="mb-3">
             <label>Workout Date</label>
             <input type="date" id="workoutDate" class="form-control">
         </div>
 
-        <!-- Day Type -->
         <div class="mb-3">
             <label>Select Day Type</label>
             <select id="dayType" class="form-select" onchange="loadRoutine()">
@@ -141,31 +61,23 @@ label {
     </div>
 </div>
 
-<!-- Firebase Setup -->
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import { getFirestore, collection, addDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-// 🔑 Replace with your own Firebase project config
+// 🔑 Firebase config (replace with your credentials)
 const firebaseConfig = {
-  apiKey: "PASTE_YOURS",
-  authDomain: "PASTE_YOURS",
-  projectId: "PASTE_YOURS",
-  storageBucket: "PASTE_YOURS",
-  messagingSenderId: "PASTE_YOURS",
-  appId: "PASTE_YOURS"
+  apiKey: "AIzaSyAPy4J2VvWVbTjzKPGhr5YkfYwwL7Ai6B4",
+  authDomain: "gymwebsite-tracker.firebaseapp.com",
+  projectId: "gymwebsite-tracker",
+  storageBucket: "gymwebsite-tracker.firebasestorage.app",
+  messagingSenderId: "1048952192948",
+  appId: "1:1048952192948:web:b77466f54c26e8f74c7ce1"
 };
 
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
-// Make Firestore functions accessible globally
-window.db = db;
-window.collection = collection;
-window.addDoc = addDoc;
-</script>
-
-<script>
 // Predefined routines
 const routines = {
     Push: { Chest: ["Bench Press","Incline Dumbbell Press"], Shoulders: ["Overhead Press"], Triceps: ["Triceps Pushdown"] },
@@ -176,7 +88,7 @@ const routines = {
 // Default date = today
 document.getElementById("workoutDate").value = new Date().toISOString().slice(0,10);
 
-// Load routine based on selected day
+// Load routine based on day type
 function loadRoutine() {
     const dayType = document.getElementById("dayType").value;
     const container = document.getElementById("exerciseContainer");
@@ -205,7 +117,6 @@ function loadRoutine() {
 // Add exercise card
 function addExercise(name="", container=null) {
     if(!container) container = document.getElementById("exerciseContainer");
-
     const div = document.createElement("div");
     div.classList.add("exercise-card");
     div.innerHTML = `
@@ -220,7 +131,6 @@ function addExercise(name="", container=null) {
     container.appendChild(div);
 }
 
-// Prompt to add new exercise
 function promptAddExercise(group) {
     const container = document.getElementById(`group-${group}`);
     const name = prompt(`Enter exercise name for ${group}:`);
@@ -233,8 +143,8 @@ async function saveWorkout() {
     const day = document.getElementById("dayType").value;
     const date = document.getElementById("workoutDate").value;
 
-    if(!day) { alert("Select a day type first!"); return; }
-    if(!date) { alert("Select a date!"); return; }
+    if(!day){ alert("Select a day type!"); return; }
+    if(!date){ alert("Select a date!"); return; }
 
     const exercises = [];
     document.querySelectorAll(".exercise-card").forEach(card => {
@@ -242,30 +152,24 @@ async function saveWorkout() {
         const sets = card.querySelector(".exercise-sets").value;
         const reps = card.querySelector(".exercise-reps").value;
         const weight = card.querySelector(".exercise-weight").value;
-        if(name) exercises.push({ name, sets, reps, weight });
+        if(name) exercises.push({name, sets, reps, weight});
     });
 
     if(exercises.length === 0){ alert("Add at least one exercise!"); return; }
 
     try {
-        await addDoc(collection(db, "workouts"), {
-            user,
-            day,
-            date,
-            exercises,
-            createdAt: new Date()
-        });
+        await addDoc(collection(db, "workouts"), { user, day, date, exercises, createdAt: new Date() });
         alert("Workout saved to Firebase 💪🔥");
-        window.location.href = "index.html"; // Redirect to index.html after save
-    } catch (error) {
-        console.error("Error saving workout: ", error);
-        alert("Something went wrong. Check console for details.");
+        window.location.href = "index.html"; // Redirect after save
+    } catch(err) {
+        console.error("Error:", err);
+        alert("Error saving workout. Check console.");
     }
 }
 
-// Bind save button
+// Bind button
 document.getElementById("saveBtn").addEventListener("click", saveWorkout);
-</script>
 
+</script>
 </body>
 </html>

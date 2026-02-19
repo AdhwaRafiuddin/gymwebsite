@@ -7,79 +7,18 @@
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
 
 <style>
-    body {
-        background: linear-gradient(135deg, #798777, #6c7a6a);
-        color: #F8EDE3;
-        min-height: 100vh;
-    }
-
-    .navbar {
-        background-color: #A2B29F;
-        box-shadow: 0 3px 10px rgba(0,0,0,0.2);
-    }
-
-    .navbar-brand {
-        color: #F8EDE3 !important;
-        font-weight: 800;
-        letter-spacing: 1px;
-    }
-
-    .card {
-        background-color: #A2B29F;
-        border: none;
-        box-shadow: 0 10px 25px rgba(0,0,0,0.25);
-        border-radius: 18px;
-        padding: 20px;
-        margin-bottom: 22px;
-    }
-
-    .exercise-item {
-        background-color: #B5C7B3;
-        border-radius: 12px;
-        padding: 12px 15px;
-        margin-bottom: 10px;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-    }
-
-    .exercise-info {
-        flex: 1;
-        font-weight: 600;
-        color: #2f3b2f;
-    }
-
-    .exercise-info .name {
-        font-weight: 800;
-        margin-right: 6px;
-    }
-
-    .btn-custom {
-        background-color: #F8EDE3;
-        color: #798777;
-        font-weight: 700;
-        border-radius: 16px;
-        padding: 12px 30px;
-    }
-
-    .btn-custom:hover {
-        background-color: #BDD2B6;
-    }
-
-    .section-title {
-        font-weight: 800;
-    }
-
-    .section-title.day-type {
-        color: #2f3b2f;
-        font-size: 14px;
-        text-transform: uppercase;
-    }
-
-    .subtle-text {
-        color: #DDE6DD;
-        font-weight: 500;
-    }
+body { background: linear-gradient(135deg, #798777, #6c7a6a); color: #F8EDE3; min-height: 100vh; }
+.navbar { background-color: #A2B29F; box-shadow:0 3px 10px rgba(0,0,0,0.2);}
+.navbar-brand { color: #F8EDE3 !important; font-weight:800; letter-spacing:1px; }
+.card { background-color:#A2B29F; border:none; border-radius:18px; padding:20px; margin-bottom:22px; box-shadow:0 10px 25px rgba(0,0,0,0.25);}
+.exercise-item { background-color:#B5C7B3; border-radius:12px; padding:12px 15px; margin-bottom:10px; display:flex; justify-content:space-between; align-items:center;}
+.exercise-info { flex:1; font-weight:600; color:#2f3b2f; }
+.exercise-info .name { font-weight:800; margin-right:6px; }
+.btn-custom { background-color:#F8EDE3; color:#798777; font-weight:700; border-radius:16px; padding:12px 30px;}
+.btn-custom:hover { background-color:#BDD2B6; }
+.section-title { font-weight:800; }
+.section-title.day-type { color:#2f3b2f; font-size:14px; text-transform:uppercase;}
+.subtle-text { color:#DDE6DD; font-weight:500; }
 </style>
 </head>
 
@@ -90,7 +29,6 @@
 </nav>
 
 <div class="container my-4">
-
     <div class="text-center mb-4">
         <h4 id="todayDate" class="fw-bold"></h4>
         <p class="subtle-text">Consistency builds strength.</p>
@@ -99,16 +37,12 @@
     <div id="lastWorkoutContainer"></div>
 
     <div class="text-center mt-4">
-        <a href="log.html" class="btn btn-custom">
-            Log New Workout 💪
-        </a>
+        <a href="log.html" class="btn btn-custom">Log New Workout 💪</a>
     </div>
-
 </div>
 
-<!-- 🔥 STEP 1: Firebase Setup -->
+<!-- Firebase Setup -->
 <script type="module">
-
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
@@ -124,91 +58,76 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
-// Make accessible globally
+// make accessible globally
 window.db = db;
 window.collection = collection;
 window.getDocs = getDocs;
 
-// After Firebase loads → start app
+// Initialize app
 initApp();
-
 </script>
 
-<!-- 🔥 STEP 2: Firestore Logic -->
 <script>
-
-function initApp() {
-
+async function initApp() {
+    // Show today's date
     const today = new Date();
     document.getElementById("todayDate").innerText =
-        today.toLocaleDateString('en-US', {
-            weekday: 'long',
-            year:'numeric',
-            month:'long',
-            day:'numeric'
-        });
+        today.toLocaleDateString('en-US', { weekday:'long', year:'numeric', month:'long', day:'numeric' });
 
-    loadWorkouts();
+    // Load last workouts
+    await loadWorkouts();
 }
 
 async function loadWorkouts() {
-
     const container = document.getElementById("lastWorkoutContainer");
     container.innerHTML = "";
 
-    let workouts = [];
+    try {
+        const querySnapshot = await window.getDocs(window.collection(window.db, "workouts"));
+        const workouts = [];
+        querySnapshot.forEach(doc => workouts.push(doc.data()));
 
-    const querySnapshot = await window.getDocs(
-        window.collection(window.db, "workouts")
-    );
-
-    querySnapshot.forEach((doc) => {
-        workouts.push(doc.data());
-    });
-
-    if (workouts.length === 0) {
-        container.innerHTML = `
-            <div class="card text-center">
-                <h5>No workouts logged yet 💤</h5>
-                <p>Start your journey by logging your first workout.</p>
-            </div>
-        `;
-        return;
-    }
-
-    // Sort newest first
-    workouts.sort((a,b) => new Date(b.date) - new Date(a.date));
-
-    const latestWorkout = workouts[0];
-
-    const card = document.createElement("div");
-    card.classList.add("card");
-
-    let html = `
-        <h6 class="section-title day-type mb-1">
-            ${latestWorkout.dayType} Day
-        </h6>
-        <h5 class="section-title mb-3">
-            ${latestWorkout.person} – 
-            ${new Date(latestWorkout.date).toLocaleDateString()}
-        </h5>
-    `;
-
-    latestWorkout.exercises.forEach((ex) => {
-        html += `
-            <div class="exercise-item">
-                <div class="exercise-info">
-                    <span class="name">${ex.name}</span>
-                    ${ex.sets} sets × ${ex.reps} reps @ ${ex.weight} kg
+        if (workouts.length === 0) {
+            container.innerHTML = `
+                <div class="card text-center">
+                    <h5>No workouts logged yet 💤</h5>
+                    <p>Start your journey by logging your first workout.</p>
                 </div>
-            </div>
+            `;
+            return;
+        }
+
+        // Sort newest first
+        workouts.sort((a,b) => new Date(b.date) - new Date(a.date));
+        const latestWorkout = workouts[0];
+
+        const card = document.createElement("div");
+        card.classList.add("card");
+
+        let html = `
+            <h6 class="section-title day-type mb-1">${latestWorkout.day} Day</h6>
+            <h5 class="section-title mb-3">${latestWorkout.user} – ${new Date(latestWorkout.date).toLocaleDateString()}</h5>
         `;
-    });
 
-    card.innerHTML = html;
-    container.appendChild(card);
+        latestWorkout.exercises.forEach(ex => {
+            html += `
+                <div class="exercise-item">
+                    <div class="exercise-info">
+                        <span class="name">${ex.name}</span>
+                        ${ex.sets} sets × ${ex.reps} reps @ ${ex.weight} kg
+                    </div>
+                </div>
+            `;
+        });
+
+        card.innerHTML = html;
+        container.appendChild(card);
+
+    } catch (err) {
+        console.error("Error loading workouts:", err);
+        container.innerHTML = `<div class="card text-center"><h5>Error loading workouts.</h5></div>`;
+    }
 }
-
 </script>
 
 </body>
