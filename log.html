@@ -5,23 +5,21 @@
 <title>Log Workout</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-
 <style>
 body { background: linear-gradient(135deg, #798777, #6c7a6a); color: #F8EDE3; min-height:100vh; }
-.navbar { background-color:#A2B29F; box-shadow:0 3px 10px rgba(0,0,0,0.2); }
-.navbar-brand { color:#F8EDE3 !important; font-weight:800; }
-.card { background-color:#A2B29F; border:none; border-radius:18px; padding:25px; margin-bottom:20px; box-shadow:0 10px 25px rgba(0,0,0,0.25); }
-label { font-weight:700; margin-bottom:6px; }
-.form-control, .form-select { background-color:#B5C7B3; border:none; border-radius:10px; padding:10px; font-weight:600; color:#2f3b2f; }
-.exercise-card { background-color:#B5C7B3; border-radius:14px; padding:15px; margin-bottom:12px; display:flex; justify-content:space-between; align-items:center; }
-.exercise-info { display:flex; align-items:center; gap:8px; font-weight:700; color:#2f3b2f; }
-.exercise-info input { width:85px; border-radius:8px; border:none; padding:4px 6px; }
-.btn-custom { background-color:#F8EDE3; color:#798777; font-weight:800; border-radius:16px; padding:12px 30px; margin-top:15px; }
-.btn-custom:hover { background-color:#BDD2B6; }
-.group-title { font-weight:800; color:#2f3b2f; margin-top:20px; margin-bottom:10px; display:flex; justify-content:space-between; align-items:center; }
+.navbar { background-color: #A2B29F; box-shadow:0 3px 10px rgba(0,0,0,0.2);}
+.navbar-brand { color:#F8EDE3!important; font-weight:800;}
+.card { background-color:#A2B29F; border:none; border-radius:18px; padding:25px; margin-bottom:20px; }
+label { font-weight:700; margin-bottom:6px;}
+.form-control, .form-select { background-color:#B5C7B3; border:none; border-radius:10px; padding:10px; font-weight:600; color:#2f3b2f;}
+.exercise-card { background-color:#B5C7B3; border-radius:14px; padding:15px; margin-bottom:12px; display:flex; justify-content:space-between; align-items:center;}
+.exercise-info { display:flex; flex-wrap:wrap; align-items:center; gap:8px; font-weight:700; color:#2f3b2f;}
+.exercise-info input { width:80px; border-radius:8px; border:none; padding:4px 6px;}
+.btn-custom { background-color:#F8EDE3; color:#798777; font-weight:800; border-radius:16px; padding:12px 30px; margin-top:15px;}
+.btn-custom:hover { background-color:#BDD2B6;}
+.group-title { font-weight:800; color:#2f3b2f; margin-top:20px; margin-bottom:10px; display:flex; justify-content:space-between; align-items:center;}
 </style>
 </head>
-
 <body>
 
 <nav class="navbar navbar-dark px-3">
@@ -61,11 +59,11 @@ label { font-weight:700; margin-bottom:6px; }
     </div>
 </div>
 
+<!-- Firebase Setup -->
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import { getFirestore, collection, addDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-// 🔑 Firebase config (replace with your credentials)
 const firebaseConfig = {
   apiKey: "AIzaSyAPy4J2VvWVbTjzKPGhr5YkfYwwL7Ai6B4",
   authDomain: "gymwebsite-tracker.firebaseapp.com",
@@ -78,26 +76,31 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
-// Predefined routines
+window.db = db;
+window.collection = collection;
+window.addDoc = addDoc;
+</script>
+
+<script>
+// Routines
 const routines = {
-    Push: { Chest: ["Bench Press","Incline Dumbbell Press"], Shoulders: ["Overhead Press"], Triceps: ["Triceps Pushdown"] },
-    Pull: { Back: ["Pull-Ups","Barbell Row","Face Pulls"], Biceps: ["Bicep Curl"] },
-    Legs: { Legs: ["Squat","Deadlift","Lunges","Leg Curl"] }
+    Push: { Chest:["Bench Press","Incline Dumbbell Press"], Shoulders:["Overhead Press"], Triceps:["Triceps Pushdown"] },
+    Pull: { Back:["Pull-Ups","Barbell Row","Face Pulls"], Biceps:["Bicep Curl"] },
+    Legs: { Legs:["Squat","Deadlift","Lunges","Leg Curl"] }
 };
 
-// Default date = today
+// Default date today
 document.getElementById("workoutDate").value = new Date().toISOString().slice(0,10);
 
-// Load routine based on day type
+// Load routine
 function loadRoutine() {
     const dayType = document.getElementById("dayType").value;
     const container = document.getElementById("exerciseContainer");
     container.innerHTML = "";
     if(!dayType) return;
 
-    const dayGroups = routines[dayType];
-
-    for(const group in dayGroups) {
+    const groups = routines[dayType];
+    for(const group in groups){
         const groupDiv = document.createElement("div");
         groupDiv.innerHTML = `
             <div class="group-title">
@@ -110,66 +113,67 @@ function loadRoutine() {
         groupDiv.appendChild(groupContainer);
         container.appendChild(groupDiv);
 
-        dayGroups[group].forEach(ex => addExercise(ex, groupContainer));
+        groups[group].forEach(ex => addExercise(ex, groupContainer));
     }
 }
 
-// Add exercise card
-function addExercise(name="", container=null) {
+// Add exercise
+function addExercise(name="", container=null){
     if(!container) container = document.getElementById("exerciseContainer");
     const div = document.createElement("div");
     div.classList.add("exercise-card");
     div.innerHTML = `
         <div class="exercise-info">
-            <input type="text" class="exercise-name" value="${name}" placeholder="Exercise Name">
-            <input type="number" class="exercise-sets" placeholder="Sets" min="0">
-            <input type="text" class="exercise-reps" placeholder="Reps">
-            <input type="number" class="exercise-weight" placeholder="Kg" min="0">
+            <input class="exercise-name" type="text" value="${name}" placeholder="Exercise Name">
+            <input class="exercise-sets" type="number" placeholder="Sets" min="0">
+            <input class="exercise-reps" type="text" placeholder="Reps">
+            <input class="exercise-weight" type="number" placeholder="Kg" min="0">
         </div>
         <button class="btn btn-sm btn-outline-danger" onclick="this.closest('.exercise-card').remove()">Delete</button>
     `;
     container.appendChild(div);
 }
 
-function promptAddExercise(group) {
+// Prompt add
+function promptAddExercise(group){
     const container = document.getElementById(`group-${group}`);
     const name = prompt(`Enter exercise name for ${group}:`);
-    if(name && name.trim() !== "") addExercise(name.trim(), container);
+    if(name && name.trim()!=="") addExercise(name.trim(), container);
 }
 
-// Save workout to Firebase
-async function saveWorkout() {
+// Save workout
+async function saveWorkout(){
     const user = document.getElementById("personSelect").value;
     const day = document.getElementById("dayType").value;
     const date = document.getElementById("workoutDate").value;
 
-    if(!day){ alert("Select a day type!"); return; }
-    if(!date){ alert("Select a date!"); return; }
+    if(!day){ alert("Select a day!"); return; }
 
     const exercises = [];
     document.querySelectorAll(".exercise-card").forEach(card => {
         const name = card.querySelector(".exercise-name").value;
-        const sets = card.querySelector(".exercise-sets").value;
-        const reps = card.querySelector(".exercise-reps").value;
-        const weight = card.querySelector(".exercise-weight").value;
+        const sets = card.querySelector(".exercise-sets").value || 0;
+        const reps = card.querySelector(".exercise-reps").value || "";
+        const weight = card.querySelector(".exercise-weight").value || 0;
         if(name) exercises.push({name, sets, reps, weight});
     });
 
-    if(exercises.length === 0){ alert("Add at least one exercise!"); return; }
+    if(exercises.length===0){ alert("Add at least one exercise!"); return; }
 
     try {
-        await addDoc(collection(db, "workouts"), { user, day, date, exercises, createdAt: new Date() });
-        alert("Workout saved to Firebase 💪🔥");
-        window.location.href = "index.html"; // Redirect after save
-    } catch(err) {
-        console.error("Error:", err);
-        alert("Error saving workout. Check console.");
+        await addDoc(collection(db,"workouts"),{
+            user, day, date, exercises, createdAt: new Date()
+        });
+        alert("Workout saved! 💪🔥");
+        window.location.href = "index.html";
+    } catch(err){
+        console.error(err);
+        alert("Error saving workout.");
     }
 }
 
-// Bind button
 document.getElementById("saveBtn").addEventListener("click", saveWorkout);
-
 </script>
+
 </body>
 </html>
