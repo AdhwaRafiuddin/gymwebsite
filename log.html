@@ -108,6 +108,7 @@ label {
 <div class="container my-4">
     <div class="card">
 
+        <!-- Person -->
         <div class="mb-3">
             <label>Select Person</label>
             <select id="personSelect" class="form-select">
@@ -116,11 +117,13 @@ label {
             </select>
         </div>
 
+        <!-- Date -->
         <div class="mb-3">
             <label>Workout Date</label>
             <input type="date" id="workoutDate" class="form-control">
         </div>
 
+        <!-- Day Type -->
         <div class="mb-3">
             <label>Select Day Type</label>
             <select id="dayType" class="form-select" onchange="loadRoutine()">
@@ -138,50 +141,42 @@ label {
     </div>
 </div>
 
-<!-- 🔥 Firebase Setup -->
+<!-- Firebase Setup -->
 <script type="module">
-
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import { getFirestore, collection, addDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
+// 🔑 Replace with your own Firebase project config
 const firebaseConfig = {
-  apiKey: "AIzaSyAPy4J2VvWVbTjzKPGhr5YkfYwwL7Ai6B4",
-  authDomain: "gymwebsite-tracker.firebaseapp.com",
-  projectId: "gymwebsite-tracker",
-  storageBucket: "gymwebsite-tracker.firebasestorage.app",
-  messagingSenderId: "1048952192948",
-  appId: "1:1048952192948:web:b77466f54c26e8f74c7ce1"
+  apiKey: "PASTE_YOURS",
+  authDomain: "PASTE_YOURS",
+  projectId: "PASTE_YOURS",
+  storageBucket: "PASTE_YOURS",
+  messagingSenderId: "PASTE_YOURS",
+  appId: "PASTE_YOURS"
 };
 
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
+// Make Firestore functions accessible globally
 window.db = db;
 window.collection = collection;
 window.addDoc = addDoc;
-
 </script>
 
 <script>
-
+// Predefined routines
 const routines = {
-    Push: {
-        Chest: ["Bench Press","Incline Dumbbell Press"],
-        Shoulders: ["Overhead Press"],
-        Triceps: ["Triceps Pushdown"]
-    },
-    Pull: {
-        Back: ["Pull-Ups","Barbell Row","Face Pulls"],
-        Biceps: ["Bicep Curl"]
-    },
-    Legs: {
-        Legs: ["Squat","Deadlift","Lunges","Leg Curl"]
-    }
+    Push: { Chest: ["Bench Press","Incline Dumbbell Press"], Shoulders: ["Overhead Press"], Triceps: ["Triceps Pushdown"] },
+    Pull: { Back: ["Pull-Ups","Barbell Row","Face Pulls"], Biceps: ["Bicep Curl"] },
+    Legs: { Legs: ["Squat","Deadlift","Lunges","Leg Curl"] }
 };
 
-document.getElementById("workoutDate").value =
-    new Date().toISOString().slice(0,10);
+// Default date = today
+document.getElementById("workoutDate").value = new Date().toISOString().slice(0,10);
 
+// Load routine based on selected day
 function loadRoutine() {
     const dayType = document.getElementById("dayType").value;
     const container = document.getElementById("exerciseContainer");
@@ -191,108 +186,86 @@ function loadRoutine() {
     const dayGroups = routines[dayType];
 
     for(const group in dayGroups) {
-
         const groupDiv = document.createElement("div");
-
         groupDiv.innerHTML = `
             <div class="group-title">
                 <span>${group}</span>
-                <button class="btn btn-sm btn-outline-light"
-                    onclick="promptAddExercise('${group}')">
-                    ➕ Add
-                </button>
+                <button class="btn btn-sm btn-outline-light" onclick="promptAddExercise('${group}')">➕ Add</button>
             </div>
         `;
-
         const groupContainer = document.createElement("div");
         groupContainer.id = `group-${group}`;
         groupDiv.appendChild(groupContainer);
         container.appendChild(groupDiv);
 
-        dayGroups[group].forEach(ex =>
-            addExercise(ex, groupContainer));
+        dayGroups[group].forEach(ex => addExercise(ex, groupContainer));
     }
 }
 
+// Add exercise card
 function addExercise(name="", container=null) {
-    if(!container)
-        container = document.getElementById("exerciseContainer");
+    if(!container) container = document.getElementById("exerciseContainer");
 
     const div = document.createElement("div");
     div.classList.add("exercise-card");
-
     div.innerHTML = `
         <div class="exercise-info">
-            <span>${name}</span>
-            <input class="sets" type="number" placeholder="Sets" min="0">
-            <input class="reps" type="text" placeholder="Reps">
-            <input class="weight" type="number" placeholder="Kg" min="0">
+            <input type="text" class="exercise-name" value="${name}" placeholder="Exercise Name">
+            <input type="number" class="exercise-sets" placeholder="Sets" min="0">
+            <input type="text" class="exercise-reps" placeholder="Reps">
+            <input type="number" class="exercise-weight" placeholder="Kg" min="0">
         </div>
-        <button class="btn btn-sm btn-outline-danger"
-            onclick="this.closest('.exercise-card').remove()">
-            Delete
-        </button>
+        <button class="btn btn-sm btn-outline-danger" onclick="this.closest('.exercise-card').remove()">Delete</button>
     `;
-
     container.appendChild(div);
 }
 
+// Prompt to add new exercise
 function promptAddExercise(group) {
     const container = document.getElementById(`group-${group}`);
     const name = prompt(`Enter exercise name for ${group}:`);
-    if(name && name.trim() !== "")
-        addExercise(name.trim(), container);
+    if(name && name.trim() !== "") addExercise(name.trim(), container);
 }
 
-  async function saveWorkout() {
-    const user = document.getElementById("userSelect").value;
-    const day = document.getElementById("daySelect").value;
-    const date = document.getElementById("dateInput").value;
+// Save workout to Firebase
+async function saveWorkout() {
+    const user = document.getElementById("personSelect").value;
+    const day = document.getElementById("dayType").value;
+    const date = document.getElementById("workoutDate").value;
+
+    if(!day) { alert("Select a day type first!"); return; }
+    if(!date) { alert("Select a date!"); return; }
 
     const exercises = [];
-
     document.querySelectorAll(".exercise-card").forEach(card => {
-      const name = card.querySelector(".exercise-name").value;
-      const sets = card.querySelector(".exercise-sets").value;
-      const reps = card.querySelector(".exercise-reps").value;
-      const weight = card.querySelector(".exercise-weight").value;
-
-      if (name) {
-        exercises.push({
-          name,
-          sets,
-          reps,
-          weight
-        });
-      }
+        const name = card.querySelector(".exercise-name").value;
+        const sets = card.querySelector(".exercise-sets").value;
+        const reps = card.querySelector(".exercise-reps").value;
+        const weight = card.querySelector(".exercise-weight").value;
+        if(name) exercises.push({ name, sets, reps, weight });
     });
 
-    if (!date) {
-      alert("Please select a date.");
-      return;
-    }
+    if(exercises.length === 0){ alert("Add at least one exercise!"); return; }
 
     try {
-      await addDoc(collection(db, "workouts"), {
-        user,
-        day,
-        date,
-        exercises,
-        createdAt: new Date()
-      });
-
-      alert("Workout saved to Firebase 💪🔥");
-      location.reload();
-
+        await addDoc(collection(db, "workouts"), {
+            user,
+            day,
+            date,
+            exercises,
+            createdAt: new Date()
+        });
+        alert("Workout saved to Firebase 💪🔥");
+        window.location.href = "index.html"; // Redirect to index.html after save
     } catch (error) {
-      console.error("Error saving workout: ", error);
-      alert("Something went wrong.");
+        console.error("Error saving workout: ", error);
+        alert("Something went wrong. Check console for details.");
     }
-  }
+}
 
-  document.getElementById("saveBtn").addEventListener("click", saveWorkout);
+// Bind save button
+document.getElementById("saveBtn").addEventListener("click", saveWorkout);
 </script>
-
 
 </body>
 </html>
